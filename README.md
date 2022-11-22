@@ -6,10 +6,10 @@ Hello
 - **Model**: Feedforward fully connected neural nets, 
 - **Input**: the first six lags of the Bitcoin log returns r(t-i) = (log(P(t-i)/P(t-i-1))), i = 0,1,2,3,4,5
 - **Architecture**: 
-    - Input layer: dim 6
+    - Input: dim 6
     - Hidden layer 1: dim 6
     - Hidden layer 2: dim 3 
-    - Ouput layer: dim 1 
+    - Ouput: dim 1 
     - Activation: sigmoid
 - **Output**: future log return, r(t+1)
 - **Data splitting**: Training and validation samples were roughly split into 1/2 and 1/2 of the dataset so that the in-sample period ends in 2016-06-01.

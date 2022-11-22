@@ -2,7 +2,7 @@ Hello
 
 # Step 1: Reproduce results of Marc on neural nets
 
-- **Data**: historical data of the Bitcoin (BTC) price expressed in USD daily for the period of April 15, 2014 to Januar 10, 2019. Take Adj Close as P(t) (price at time t)
+- **Data**: historical data of the Bitcoin (BTC) price expressed in USD daily for the period of April 15, 2014 to Januar 10, 2019. Data from yahoo start at Sep 17, 2014, Take Adj Close as P(t) (price at time t) 
 - **Model**: Feedforward fully connected neural nets, 
 - **Input**: the first six lags of the Bitcoin log returns r(t-i) = (log(P(t-i)/P(t-i-1))), i = 0,1,2,3,4,5
 - **Architecture**: 

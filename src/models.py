@@ -26,12 +26,6 @@ class Model(nn.Module):
         x = torch.tanh(self.layer3(x))
         return x.view(-1)
     
-    def load_pretrained_model(self):
-        # This loads the parameters saved in bestmodel.pth into the model
-        model_path = '../models/bestmodel.pth'
-        m_state_dict = torch.load(model_path, map_location=torch.device(self.device))
-        self.load_state_dict(m_state_dict)
-    
     def train(self, train_input, train_target, num_epochs, mini_batch_size):
             # train_input : tensor of size (N, D) where D is the numbers of lags used to forecast
             # train_target : tensor of size (N)
@@ -44,7 +38,7 @@ class Model(nn.Module):
             for e in tqdm(range(num_epochs)):
                 epoch_loss = 0
                 
-                for b in range(0, int(train_input.size(0)/mini_batch_size), mini_batch_size):
+                for b in range(0, int(train_input.size(0)/mini_batch_size), 1):
                     output = self(train_input.narrow(0, b, mini_batch_size))
                     loss = self.criterion(output, train_target.narrow(0, b, mini_batch_size))
                     epoch_loss += loss.item()
@@ -55,8 +49,21 @@ class Model(nn.Module):
                 #print("Epoch {}: Loss {}".format(e, epoch_loss))
                 train_losses.append(epoch_loss)
             
-            return train_losses
+            self.train_losses = train_losses
 
+    def test(self, val_input, val_target):
+        output = self(val_input)
+        positive = val_target > 0
+        negative = val_target < 0
+        print(positive.sum())
+        print(negative.sum())
+        print(len(val_target), positive.sum() + negative.sum())
+        # hit_rate = output[positive_forecast].sign().eq(val_target[positive_forecast].sign()).sum() / positive_forecast.size(0)
+        # print(hit_rate)
+        # self.hit_rate = hit_rate
+        # self.max_draw_down = max_draw_down
+        # self.annualized_sharpe = annualized_sharpe
+    
     # def predict(self, test_input):
     #     test_output = self(test_input)
     #     return test_output

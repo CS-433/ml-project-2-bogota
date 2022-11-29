@@ -11,27 +11,18 @@ def load_data(path):
     # df.drop(columns=['Open', 'High', 'Low', 'Close', 'Volume'], inplace=True)
     # df['Date'] = pd.to_datetime(df['Date'])
 
-    # df['log_return'] = np.log(df['Adj Close']/df['Adj Close'].shift(-1))
+    # df['log_return'] = np.log(df['Adj Close']/df['Adj Close'].shift(1))
     # df.drop(columns='Adj Close', inplace=True)
     # df.replace([np.inf, -np.inf], np.nan, inplace=True)
     # df.dropna(inplace=True)
-    
     df = quandl.get("BCHARTS/BITSTAMPUSD", start_date="2014-04-15", end_date="2019-01-10")
-    df['log_return'] = np.log(df['Weighted Price']/df['Weighted Price'].shift(-1))
+    df['log_return'] = np.log(df['Open']/df['Open'].shift(1))
     df.replace([np.inf, -np.inf], np.nan, inplace=True)
     df.dropna(inplace=True)
     return df
 
 
 def split_data(df, train_ratio):
-    # date = df['Date'].iloc[int(train_ratio*len(df))]
-    # train_period = (df['Date'] < date)
-    # val_period = (df['Date'] >= date)
-
-    # df_train = df.loc[train_period]
-    # df_val = df.loc[val_period]
-    
-    train_ratio = 0.5
     date = df.index[int(train_ratio*len(df))]
     train_period = (df.index < date)
     val_period = (df.index >= date)
@@ -55,7 +46,7 @@ def create_sequences(df, nb_lags):
 if __name__ == '__main__':
 
     df = load_data(DATA_FOLDER + 'BTC-USD.csv')
-    df_train, df_val = split_data(df, train_ratio=0.5)
+    df_train, df_val = split_data(df, train_ratio=0.4482)
     train_input, train_target = create_sequences(df_train, nb_lags=6)
     val_input, val_target = create_sequences(df_val, nb_lags=6)
     

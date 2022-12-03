@@ -4,6 +4,7 @@ from torch.nn import functional as F
 from tqdm import tqdm
 from src.trading_utils import get_log_returns, get_returns, compute_hit_rate, compute_max_drawdown, compute_sharpe
 
+RF = 0
 
 class Model(nn.Module):
     def __init__(self, nb_lags, lr):
@@ -18,6 +19,8 @@ class Model(nn.Module):
 
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.to(self.device)  
+        
+        self.best_hit_rate = 0
     
     
     def forward(self, x):
@@ -42,12 +45,17 @@ class Model(nn.Module):
                 self.optimizer.zero_grad()
                 loss.backward()
                 self.optimizer.step()
+                
                 train_losses.append(loss.item())
+                train_hit_rates.append(compute_hit_rate(self, train_input, train_target, rf=RF))
+                
+                if train_hit_rates[-1] > self.best_hit_rate:
+                    self.best_hit_rate = train_hit_rates[-1]
+                    self.best_weights = self.state_dict()
                 
                 if (val_input is not None) and (val_target is not None):
                     val_losses.append(self.criterion(self(val_input), val_target).item())
-                    train_hit_rates.append(compute_hit_rate(self, train_input, train_target))
-                    val_hit_rates.append(compute_hit_rate(self, val_input, val_target))
+                    val_hit_rates.append(compute_hit_rate(self, val_input, val_target, rf=RF))
             
             self.train_losses = train_losses
             self.val_losses = val_losses
@@ -55,9 +63,9 @@ class Model(nn.Module):
             self.val_hit_rates = val_hit_rates
     
     
-    def test(self, val_input, val_target):
-        self.log_returns = get_log_returns(self, val_input, val_target)
-        self.returns = get_returns(self, val_input, val_target)
-        self.hit_rate = compute_hit_rate(self, val_input, val_target)
+    def test(self, input, target):
+        self.log_returns = get_log_returns(self, input, target, rf=RF)
+        self.returns = get_returns(self, input, target, rf=RF)
+        self.hit_rate = compute_hit_rate(self, input, target, rf=RF)
         self.max_dd = compute_max_drawdown(self.returns)
         self.sharpe = compute_sharpe(self.log_returns, rf=0.01, n=365)

@@ -16,7 +16,8 @@ def load_data(path):
     # df.replace([np.inf, -np.inf], np.nan, inplace=True)
     # df.dropna(inplace=True)
     df = quandl.get("BCHARTS/BITSTAMPUSD", start_date="2014-04-15", end_date="2019-01-10")
-    df['log_return'] = np.log(df['Open']/df['Open'].shift(1))
+    print(df.columns)
+    df['log_return'] = np.log(df['Close']/df['Close'].shift(1))
     df.replace([np.inf, -np.inf], np.nan, inplace=True)
     df.dropna(inplace=True)
     return df

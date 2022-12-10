@@ -1,10 +1,10 @@
+import copy
 import torch
 from torch import nn, optim
 from torch.nn import functional as F
 from tqdm import tqdm
 from src.trading_utils import get_log_returns, get_returns, compute_hit_rate, compute_max_drawdown, compute_sharpe
 
-RF = 0
 
 class Model(nn.Module):
     def __init__(self, nb_lags, lr):
@@ -14,7 +14,7 @@ class Model(nn.Module):
         self.layer2 = nn.Linear(in_features=6, out_features=3)
         self.layer3 = nn.Linear(in_features=3, out_features=1)
         
-        self.optimizer = optim.Rprop(self.parameters(), lr=lr)
+        self.optimizer = optim.Rprop(self.parameters())
         self.criterion = nn.MSELoss(reduction='sum')
 
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -30,32 +30,37 @@ class Model(nn.Module):
         return x.view(-1)
     
     
-    def train(self, train_input, train_target, num_epochs, val_input=None, val_target=None):
+    def train(self, train_lags, train_target, num_epochs, val_lags=None, val_target=None):
             # train_input : tensor of size (N, D) where D is the numbers of lags used to forecast
             # train_target : tensor of size (N)
-
+            
+            # Standardize
+            self.mean_ = train_target.mean()
+            self.std_ = train_target.std()
+            normalized_train_lags = self.standardize(train_lags)
+            
             train_losses = []
             val_losses = []
             train_hit_rates = []
             val_hit_rates = []
             
             for e in tqdm(range(num_epochs), desc='Training model', unit=' epoch'):
-                output = self(train_input)
+                output = self(normalized_train_lags)
                 loss = self.criterion(output, train_target)
                 self.optimizer.zero_grad()
                 loss.backward()
                 self.optimizer.step()
                 
                 train_losses.append(loss.item())
-                train_hit_rates.append(compute_hit_rate(self, train_input, train_target, rf=RF))
+                train_hit_rates.append(compute_hit_rate(self, train_lags, train_target))
                 
-                if train_hit_rates[-1] > self.best_hit_rate:
-                    self.best_hit_rate = train_hit_rates[-1]
-                    self.best_weights = self.state_dict()
-                
-                if (val_input is not None) and (val_target is not None):
-                    val_losses.append(self.criterion(self(val_input), val_target).item())
-                    val_hit_rates.append(compute_hit_rate(self, val_input, val_target, rf=RF))
+                if (val_lags is not None) and (val_target is not None):
+                    val_losses.append(self.criterion(self(val_lags), val_target).item())
+                    val_hit_rates.append(compute_hit_rate(self, val_lags, val_target))
+                    
+                    if val_hit_rates[-1] > self.best_hit_rate:
+                        self.best_hit_rate = val_hit_rates[-1]
+                        torch.save(self.state_dict(), 'models/bestmodel.pth')
             
             self.train_losses = train_losses
             self.val_losses = val_losses
@@ -63,9 +68,17 @@ class Model(nn.Module):
             self.val_hit_rates = val_hit_rates
     
     
-    def test(self, input, target):
-        self.log_returns = get_log_returns(self, input, target, rf=RF)
-        self.returns = get_returns(self, input, target, rf=RF)
-        self.hit_rate = compute_hit_rate(self, input, target, rf=RF)
-        self.max_dd = compute_max_drawdown(self.returns)
-        self.sharpe = compute_sharpe(self.log_returns, rf=0.01, n=365)
+    def test(self, lags, target):
+        self.log_returns = get_log_returns(self, lags, target)
+        self.returns = get_returns(self, lags, target)
+        self.hit_rate = compute_hit_rate(self, lags, target)
+        self.max_dd = compute_max_drawdown(self.log_returns)
+        self.sharpe = compute_sharpe(self.log_returns, n_periods=365)
+    
+    
+    def forecast(self, lags):
+        return self(self.standardize(lags))
+    
+    
+    def standardize(self, log_returns):
+        return (log_returns - self.mean_)/self.std_

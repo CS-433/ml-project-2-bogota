@@ -122,7 +122,7 @@ class CNN(Model):
         self.conv1 = nn.Conv1d(in_channels=1, out_channels=6, kernel_size=3)
         self.conv2 = nn.Conv1d(in_channels=6, out_channels=4, kernel_size=1)
         self.flatten = nn.Flatten()
-        self.fc1 = nn.Linear(4*(nb_lags-(3-1)), 1)
+        self.fc = nn.Linear(in_features=4*(nb_lags-(3-1)), out_features=1)
         self.relu = torch.nn.ReLU()
         
         self.optimizer = optim.AdamW(self.parameters(), lr=lr)
@@ -133,5 +133,27 @@ class CNN(Model):
         x = self.conv2(x)
         x = self.relu(x)
         x = self.flatten(x)
-        x = self.fc1(x)
+        x = self.fc(x)
         return x.view(-1)
+
+
+class LSTM(Model):
+    def __init__(self, nb_lags, lr):
+        # instantiate model architecture + optimizer
+        super().__init__()
+        self.lstm = nn.LSTM(
+            input_size = 1,
+            hidden_size = 2,
+            num_layers = 2,
+            batch_first = True,
+            dropout = 0
+        )
+        self.fc = nn.Linear(in_features=2, out_features=1)
+        
+        self.optimizer = optim.AdamW(self.parameters(), lr=lr)
+    
+    def forward(self, x):
+        self.lstm.flatten_parameters()
+        _, (hidden, _) = self.lstm(x[:,:,None])
+        out = self.fc(hidden[-1])
+        return out.view(-1)

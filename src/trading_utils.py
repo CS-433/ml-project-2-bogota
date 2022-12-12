@@ -1,12 +1,13 @@
 import numpy as np
 import pandas as pd
-
+import torch
 
 RF = 0
 
 
 def get_log_returns(model, lags, target, rf=RF):
     output = model.forecast(lags)
+    output = torch.Tensor(output)
     return (output.sign() * target).detach()
 
 
@@ -17,6 +18,7 @@ def get_returns(model, lags, target, rf=RF):
 
 def compute_hit_rate(model, lags, target, rf=RF):
     output = model.forecast(lags)
+    output, target = torch.Tensor(output), torch.Tensor(target)
     hit_position = (output.sign() * target.sign()) >= 0
     return (hit_position.sum() / len(hit_position)).item()
 

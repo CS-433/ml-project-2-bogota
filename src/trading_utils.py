@@ -1,23 +1,24 @@
 import numpy as np
 import pandas as pd
 
+
 RF = 0
 
 
 def get_log_returns(model, lags, target, rf=RF):
-    output = model.forecast(lags)  
-    return (output.sign()*target).detach()
+    output = model.forecast(lags)
+    return (output.sign() * target).detach()
 
 
-def get_returns(model, lags, target, rf=RF):    
+def get_returns(model, lags, target, rf=RF):
     log_returns = get_log_returns(model, lags, target)
     return np.exp(log_returns) - 1
 
 
 def compute_hit_rate(model, lags, target, rf=RF):
-    output = model.forecast(lags)  
-    hit_position = (output.sign()*target.sign()) >= 0
-    return (hit_position.sum()/len(hit_position)).item()
+    output = model.forecast(lags)
+    hit_position = (output.sign() * target.sign()) >= 0
+    return (hit_position.sum() / len(hit_position)).item()
 
 
 def compute_max_drawdown(returns):
@@ -32,4 +33,4 @@ def compute_sharpe(log_returns, n_periods, rf=RF):
     log_returns = pd.Series(log_returns)
     mean = log_returns.mean()
     std = log_returns.std()
-    return (n_periods * mean - np.log(1+rf))/(std*np.sqrt(n_periods))
+    return (n_periods * mean - np.log(1 + rf)) / (std * np.sqrt(n_periods))

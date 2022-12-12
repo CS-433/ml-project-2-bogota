@@ -1,4 +1,3 @@
-import copy
 import torch
 from torch import nn, optim
 from torch.nn import functional as F
@@ -103,14 +102,36 @@ class NN(Model):
     def __init__(self, nb_lags, lr):
         # instantiate model architecture + optimizer
         super().__init__()
-        self.layer1 = nn.Linear(in_features=nb_lags, out_features=6)
-        self.layer2 = nn.Linear(in_features=6, out_features=3)
-        self.layer3 = nn.Linear(in_features=3, out_features=1)
+        self.fc1 = nn.Linear(in_features=nb_lags, out_features=6)
+        self.fc2 = nn.Linear(in_features=6, out_features=3)
+        self.fc3 = nn.Linear(in_features=3, out_features=1)
 
         self.optimizer = optim.Rprop(self.parameters(), lr=lr)
 
     def forward(self, x):
-        x = torch.sigmoid(self.layer1(x))
-        x = torch.sigmoid(self.layer2(x))
-        x = self.layer3(x)
+        x = torch.sigmoid(self.fc1(x))
+        x = torch.sigmoid(self.fc2(x))
+        x = self.fc3(x)
+        return x.view(-1)
+
+
+class CNN(Model):
+    def __init__(self, nb_lags, lr):
+        # instantiate model architecture + optimizer
+        super().__init__()
+        self.conv1 = nn.Conv1d(in_channels=1, out_channels=6, kernel_size=3)
+        self.conv2 = nn.Conv1d(in_channels=6, out_channels=4, kernel_size=1)
+        self.flatten = nn.Flatten()
+        self.fc1 = nn.Linear(4*(nb_lags-(3-1)), 1)
+        self.relu = torch.nn.ReLU()
+        
+        self.optimizer = optim.AdamW(self.parameters(), lr=lr)
+    
+    def forward(self, x):
+        x = self.conv1(x[:,None,:])
+        x = self.relu(x)
+        x = self.conv2(x)
+        x = self.relu(x)
+        x = self.flatten(x)
+        x = self.fc1(x)
         return x.view(-1)

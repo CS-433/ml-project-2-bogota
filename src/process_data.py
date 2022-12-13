@@ -42,42 +42,42 @@ def find_paths(dataset):
 
 
 def load_data(path, dataset):
+    df = pd.read_csv(path)
+    
+    # Data from: https://www.cryptodatadownload.com/data/bitstamp/
     if dataset in ['BTC-USD', 'ETH-USD', 'XRP-USD']:
-        df = pd.read_csv(path, header=1)
         df['Date'] = pd.to_datetime(df.date)
         df['Price'] = df['open']
     
+    # Data from: https://data.nasdaq.com/data/LBMA/GOLD-gold-price-london-fixing
     elif dataset == 'LBMA-GOLD':
-        df = pd.read_csv(path)
         df.drop(columns=['USD (PM)', 'GBP (AM)', 'GBP (PM)', 'EURO (AM)', 'EURO (PM)'], inplace=True)
         df.rename(columns={'USD (AM)':'Price'}, inplace=True)
         df['Date'] = pd.to_datetime(df.Date)
     
-    elif dataset == 'NYMEX-NG':
-        df = pd.read_csv(path)
+    # Data from: https://www.nasdaq.com/market-activity
+    elif dataset in ['NYMEX-NG', 'SP500']:
         df['Price'] = df['Open']
         df['Date'] = pd.to_datetime(df.Date)
     
+    # Data from: https://data.nasdaq.com/data/OPEC/ORB-opec-crude-oil-price
     elif dataset == 'OPEC-ORB':
-        df = pd.read_csv(path)
         df.rename(columns={'Value':'Price'}, inplace=True)
         df['Date'] = pd.to_datetime(df.Date)
-    
-    elif dataset == 'SP500':
-        df = pd.read_csv(path)
-        df['Open'] = df['Open'].apply(lambda x: re.sub(",", "", x))
-        df['Price'] = pd.to_numeric(df['Open'])
-        df['Date'] = pd.to_datetime(df.Date)
 
+    # Data from: https://finance.yahoo.com/
     elif dataset in ['CAC40', 'SMI']:
-        df = pd.read_csv(path)
         df['Date'] = pd.to_datetime(df.Date)
         df['Price'] = df['Open']
     
     df = df[['Date', 'Price']]
     df.set_index('Date', inplace=True)
     df.sort_index(inplace=True)
+    
+    np.seterr(divide = 'ignore')
     df["Log_Return"] = np.log(df["Price"] / df["Price"].shift(1))
+    np.seterr(divide = 'warn') 
+    
     df.replace([np.inf, -np.inf], np.nan, inplace=True)
     df.dropna(inplace=True)
     return df
@@ -104,7 +104,7 @@ def create_sequences(df, nb_lags):
     return sequences, targets
 
 
-if __name__ == "__main__":
+if __name__ == "__main__": 
     parser = argparse.ArgumentParser(description='Process data for the given dataset, i.e., load the data, compute the Log-Returns, split the data in train and test set, create sequences with the given number of lags and finally save the sequences.')
     parser.add_argument('dataset', metavar='dataset', type=str, help='A string defining the name of the dataset to process.')
     parser.add_argument('nb_lags', metavar='nb_lags', type=int, help='An int defining the number of lags.')

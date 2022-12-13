@@ -186,3 +186,32 @@ class RandomForest(RandomForestRegressor):
     #     )
     #     m_state_dict = torch.load(model_path, map_location=torch.device(self.device))
     #     self.load_state_dict(m_state_dict)
+
+
+class Ensemble:
+    def __init__(self, model_type, nb_models, nb_lags, lr):
+        self.nb_models = nb_models
+        self.nb_lags = nb_lags
+        self.lr = lr
+        self.models = [model_type(nb_lags=nb_lags, lr=lr) for i in range(nb_models)]
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    
+    def train(self, train_lags, train_target, num_epochs, batch_size=None):
+        # train_lags : tensor of size (N, D) where D is the numbers of lags used to forecast
+        # train_target : tensor of size (N)
+        for i in range(self.nb_models):
+            self.models[i].train(train_lags, train_target, num_epochs=num_epochs, batch_size=batch_size)
+    
+    def test(self, lags, target):
+        self.log_returns = get_log_returns(self, lags, target)
+        self.returns = get_returns(self, lags, target)
+        self.hit_rate = compute_hit_rate(self, lags, target)
+        self.max_dd = compute_max_drawdown(self.log_returns)
+        self.sharpe = compute_sharpe(self.log_returns, n_periods=365)
+
+    def forecast(self, lags):
+        avg_forecast = torch.zeros(lags.shape[0])
+        for i in range(self.nb_models):
+            avg_forecast += self.models[i].forecast(lags)
+        avg_forecast = avg_forecast/self.nb_models
+        return avg_forecast

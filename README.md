@@ -1,38 +1,140 @@
-Hello
-# Step 0: Baseline
-Compute performances of simple buy and hold strategy.
-# Step 1: Reproduce results of Marc on neural nets
+# CS-433: Machine Learning Fall 2022, Project 2 
+- Topic: *Machine learning in finance - Forecasting and Trading*
+- Team Name: Bogota
+- Team Member:
+    1. Lelièvre Maxime, **SCIPER: 296777** (maxime.lelievre@epfl.ch)
+    2. Peduto Matteo, **SCIPER: 316194** (matteo.peduto@epfl.ch)
+    3. Mery Tom, **SCIPER: 297217** (tom.mery@epfl.ch)
 
-- **Data**: historical data of the Bitcoin (BTC) price expressed in USD daily for the period of April 15, 2014 to Januar 10, 2019. Data from yahoo start at Sep 17, 2014, Take Adj Close as P(t) (price at time t) 
-- **Model**: Feedforward fully connected neural nets, 
-- **Input**: the first six lags of the Bitcoin log returns r(t-i) = (log(P(t-i)/P(t-i-1))), i = 0,1,2,3,4,5
-- **Architecture**: 
-    - Input: dim 6
-    - Hidden layer 1: dim 6
-    - Hidden layer 2: dim 3 
-    - Ouput: dim 1 
-    - Activation: sigmoid
-- **Output**: future log return, r(t+1)
-- **Data splitting**: Training and validation samples were roughly split into 1/2 and 1/2 of the dataset so that the in-sample period ends in 2016-06-01.
-- **Loss metric**: MSE to minimize
-- **Trading strategy**: if forecasted r(t+1) > 0, buy at time (t) and sell at time (t+1)
-- **Performance metrics**: 
-    - Hit rate (should be maximized): percentage of positions that have generated positive returns.
-    - Max draw down (should be minimized): the maximum observed loss from a peak to a trough. 
-    - Annualized sharpe: the product of the monthly Sharpe Ratio and the square root of 12 (see [here](https://awgmain.morningstar.com/webhelp/glossary_definitions/mutual_fund/mfglossary_Sharpe_Ratio.html#:~:text=The%20annualized%20Sharpe%20Ratio%20is,12%20(annualized%20standard%20deviation).)).
-- **Expected performance** (over 100 random neural nets): 
-    - Hit rate: 0.679
-    - Max draw down: 0.558
-    - Annualized sharpe: 1.639
+* [Getting started](#getting-started)
+    * [Project description](#project-description)
+    * [Data](#data)
+    * [Report](#report)
+* [Reproduce results](#reproduce-results)
+    * [Requirements](#Requirements)
+    * [Repo Architecture](#repo-architecture)
+    * [Instructions to run](#instructions-to-run)
+* [Results](#results)
 
-# Step 2: Improve performance using new methods
-Maybe we could try:
-- Larger prediction window
-- Deeper and/or wider Neural nets
-- New activation functions
+# Getting started
+This repository contains the codes used to produce the results presented in `report.pdf`
+## Project description
 
-And other model:
-- Random forest
-- CNN
-- RNN
-- LSTM
+Over the last few years, the cryptocurrencies became in-creasingly popular as an investment product and for a portfolio
+diversification strategy. A still increasing
+body of literature focused on the pertinence of the efficient
+market hypothesis (EMH). In essence, the EMH
+postulates that efficient markets reflect all past, public or public
+and private information in market prices. Verification of the
+EMH is important for market participants as it implies that
+such information cannot be used to make persistent profits
+on trading on the market. 
+
+In this context, we propose, in the continuation of Wildi
+et al.(2019), to extend their approachs to other cryptocurrencies
+and to commodities and market indices to see weather positive
+trading performances can be achieved with forecasting using machine learning
+models.
+
+We here implement the following four machine learning methods to forecast the log-returns of several assets:
+
+- Feedforward Neural Network (NN)
+- Convolutional Neural Network (CNN)
+- Long-Short-Term-Memory (LSTM)
+- Random Forest
+
+
+We further analyze weather the combination of several models
+trained on one asset gives better results than the results of
+the best model only and weather the combination of the same
+model trained on different assets of the same type gives better results than the results of the model trained on only one asset of this type. Therefore
+we test their performance with several trading performance
+metrics.
+
+## Data
+The collection of data has been performed on different web sites herafter detailed with the assets’ symbol used in the code:
+
+| Asset type | Asset name | Symbol | Periods | Link |
+| -----------| ---------- | ------ | -------------------- |-|
+| Crypto-currency| Bitcoin | BTC-USD | 2017-11-09 to 2022-12-13 | [here](https://www.cryptodatadownload.com/data/bitstamp/) 
+| Crypto-currency| Ether | ETH-USD | 2017-11-09 to 2022-12-13 | [here](https://www.cryptodatadownload.com/data/bitstamp/) 
+| Crypto-currency| Ripple | XRP-USD | 2017-11-09 to 2022-12-13 | [here](https://www.cryptodatadownload.com/data/bitstamp/) 
+| Commodity| Gold | LBMA-GOLD | 2012-12-13 to 2022-12-09 | [here](https://data.nasdaq.com/data/LBMA/GOLD-gold-price-london-fixing) 
+| Commodity| Natural Gas | NYMEX-NG | 2012-12-13 to 2022-12-09 | [here](https://www.nasdaq.com/market-activity) 
+| Commodity| Oil | OPEC-ORB | 2012-12-13 to 2022-12-09 | [here](https://data.nasdaq.com/data/OPEC/ORB-opec-crude-oil-price) 
+| Stock market index| S&P500 | SP500 | 2012-12-13 to 2022-12-12| [here](https://www.nasdaq.com/market-activity) 
+| Stock market index| SMI | SMI | 2012-12-13 to 2022-12-12| [here](https://finance.yahoo.com/) 
+| Stock market index| CAC40 | CAC40 | 2012-12-13 to 2022-12-12| [here](https://finance.yahoo.com/) 
+
+The raw data are already available in the data folder.
+## Report
+All the detailes about the choices that have been made and the methodology used throughout this project are available in `report.pdf`. Through this report, the reader is able to understand the different assumptions, decisions and results made during the project. The theoretical background is also explained.
+# Reproduce results
+## Requirements
+- Python==3.9.13
+- Numpy==1.21.5
+- Matplotlib
+
+## Repo Architecture
+<pre>  
+├─── data
+    ├─── submission.csv: File generated by run.py. Contains predictions of sample from test.csv. 
+    ├─── test.csv: File containing samples to be predicted.
+    ├─── train.csv: File with labeled sample using for training.
+├─── figures
+    ├─── mass.jpeg: plots of the performance during training for mass-all_jet
+    ├─── mass_jet0.png: plots of the performance during training for model mass-jet0
+    ├─── mass_jet1.png: plots of the performance during training for model mass-jet1
+    ├─── mass_jet2.png: plots of the performance during training for model mass-jet2
+    ├─── mass_jet3.png: plots of the performance during training for model mass-jet3
+    ├─── no_mass.jpeg: plots of the performance during training for mass-all_jet
+    ├─── no_mass_jet0.png: plots of the performance during training for model no_mass-jet0
+    ├─── no_mass_jet1.png: plots of the performance during training for model no_mass-jet1
+    ├─── no_mass_jet2.png: plots of the performance during training for model no_mass-jet2
+    ├─── no_mass_jet3.png: plots of the performance during training for model no_mass-jet3
+├─── notebooks
+    ├─── data_analysis.ipynb: Exploratory data analysis notebooks. Helps to visualize distributions of features.
+    ├─── experiments.ipynb: Notebooks assessing performance of very basics models.
+├─── references
+    ├─── project1_description.pdf: Original description of the project provided by EPFL.
+    ├─── The_Higgs_boson_ML_challenge.pdf: Reference used to understand features of the dataset.
+├─── src
+    ├─── __init__.py: File to define src directory as a python package
+    ├─── best_models.pkl: Contains the best pretrained model. Used to plot the performance with plot_performance.py 
+    ├─── best_params.pkl: File generated by optimization.py. Contains best degree and lambda_ for each sub-models. This file is loaded in run.py.
+    ├─── data_processing.py: File containing implementations to process the raw data.
+    ├─── helpers.py: File provided by EPFL containing methods to load the data and create submissions for aircrowd.
+    ├─── model.py: File containing definition of the class Model
+    ├─── utils.py: File containing useful function for computing and visualization purpose.
+├─── implementations.py: File containing basics ML implementations asked in the project description.
+├─── optimization.py: File used to optimize parameters. Performs cross-validation and saved best parameters in best_params.pkl. 
+├─── plot_performance.py: Plots the performance of the pretrained best model.
+├─── README.md: README
+├─── report.pdf: Report explaining choices that has been made.
+└─── run.py: File that load the dataset, trains models with parameters in best_params.pkl and generate submissison.csv.
+</pre>
+
+## Instructions to run 
+Move to the root folder and execute:
+
+    python run.py
+
+Make sure to have all the requirements and the data folder in the root. Be aware training the models on 1000 epochs takes around 5 min on Apple silicon M1 Pro. Here the best model has been trained over 15000 epochs.
+
+If you want to run the cross-validation move to the root folder and execute:
+
+    python optimization.py
+
+Here the cross-validation has taken around 1h for one sub-models (on Apple silicon M1 Pro), therefore around 8 hours for the whole model.
+
+If you want to visualize the performances of the model during the training, move to the root folder and execute:
+
+    python plot_performance.py
+
+# Results
+The performances of the models is assessed on AirCrowd from `data/submission.csv` generated by `run.py`. The model achieves a global accuracy of 0.818 with a F1-score of 0.722.
+
+Here are he performance of each sub model during the training:
+
+[![IMAGE ALT TEXT HERE](https://github.com/CS-433/ml-project-1-los_caballeros_de_bogota/blob/main/figures/mass.jpeg)](https://github.com/CS-433/ml-project-1-los_caballeros_de_bogota/blob/main/figures)
+[![IMAGE ALT TEXT HERE](https://github.com/CS-433/ml-project-1-los_caballeros_de_bogota/blob/main/figures/no_mass.jpeg)](https://github.com/CS-433/ml-project-1-los_caballeros_de_bogota/blob/main/figures)

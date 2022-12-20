@@ -55,7 +55,7 @@ def find_best_lr(model_type, nb_lags, train_lags, train_target, val_lags, val_ta
             model = Ensemble(model_type=LSTM, nb_models=10, nb_lags=nb_lags, lr=lr)
         
         # Train model and test it on validation set:
-        model.train(train_lags, train_target, num_epochs=5, val_lags=val_lags, val_target=val_target)
+        model.train(train_lags, train_target, num_epochs=500, val_lags=val_lags, val_target=val_target)
         model.test(val_lags, val_target, n_periods=n_periods)
         
         if model.hit_rate > best_hit_rate:

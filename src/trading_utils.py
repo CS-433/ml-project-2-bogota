@@ -2,13 +2,14 @@ import numpy as np
 import pandas as pd
 import torch
 
+
 RF = 0
 
 
 def get_log_returns(model, lags, target, rf=RF):
     output = model.forecast(lags)
     output = torch.Tensor(output)
-    return (output.sign() * target).detach()
+    return (output.sign() * target).detach().to('cpu').numpy()
 
 
 def get_returns(model, lags, target, rf=RF):

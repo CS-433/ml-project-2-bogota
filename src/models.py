@@ -1,10 +1,11 @@
+import copy
 import torch
 from torch import nn, optim
 from torch.nn import functional as F
 from sklearn.ensemble import RandomForestRegressor
 from tqdm import tqdm
 from pathlib import Path
-from src.trading_utils import (
+from trading_utils import (
     get_log_returns,
     get_returns,
     compute_hit_rate,
@@ -17,9 +18,7 @@ class Model(nn.Module):
     def __init__(self):
         super().__init__()
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        self.to(self.device)
         self.criterion = nn.MSELoss()
-        self.best_hit_rate = 0
 
         self.train_losses = []
         self.val_losses = []
@@ -31,9 +30,9 @@ class Model(nn.Module):
         train_lags,
         train_target,
         num_epochs,
-        batch_size=None,
-        val_lags=None,
-        val_target=None,
+        val_lags,
+        val_target,
+        batch_size=None
     ):
         # train_lags : tensor of size (N, D) where D is the numbers of lags used to forecast
         # train_target : tensor of size (N)
@@ -51,10 +50,15 @@ class Model(nn.Module):
 
             for b in range(
                 0, train_lags.shape[0] - train_lags.shape[0] % batch_size, batch_size
-            ):
+            ):    
+                # Forward pass:
                 output = self(normalized_train_lags.narrow(0, b, batch_size))
+                
+                # Loss computation:
                 loss = self.criterion(output, train_target.narrow(0, b, batch_size))
                 epoch_loss += loss.item()
+
+                # Backward pass:
                 self.optimizer.zero_grad()
                 loss.backward()
                 self.optimizer.step()
@@ -63,40 +67,23 @@ class Model(nn.Module):
             self.train_hit_rates.append(
                 compute_hit_rate(self, train_lags, train_target)
             )
+            self.val_losses.append(
+                self.criterion(self(val_lags), val_target).item()
+            )
+            self.val_hit_rates.append(compute_hit_rate(self, val_lags, val_target))
 
-            if self.train_hit_rates[-1] > self.best_hit_rate:
-                self.best_hit_rate = self.train_hit_rates[-1]
-                model_path = Path(
-                    __file__
-                ).parent.parent / "bestmodels/best{}.pth".format(type(self).__name__)
-                torch.save(self.state_dict(), model_path)
-
-            if (val_lags is not None) and (val_target is not None):
-                self.val_losses.append(
-                    self.criterion(self(val_lags), val_target).item()
-                )
-                self.val_hit_rates.append(compute_hit_rate(self, val_lags, val_target))
-
-    def test(self, lags, target):
+    def test(self, lags, target, n_periods):
         self.log_returns = get_log_returns(self, lags, target)
         self.returns = get_returns(self, lags, target)
         self.hit_rate = compute_hit_rate(self, lags, target)
-        self.max_dd = compute_max_drawdown(self.log_returns)
-        self.sharpe = compute_sharpe(self.log_returns, n_periods=365)
+        self.max_dd = compute_max_drawdown(self.returns)
+        self.sharpe = compute_sharpe(self.log_returns, n_periods=n_periods)
 
     def forecast(self, lags):
         return self(self.standardize(lags))
 
     def standardize(self, log_returns):
         return (log_returns - self.mean_) / self.std_
-
-    def load_pretrained_model(self):
-        # This loads the parameters saved in bestmodels into the model
-        model_path = Path(__file__).parent.parent / "bestmodels/best{}.pth".format(
-            type(self).__name__
-        )
-        m_state_dict = torch.load(model_path, map_location=torch.device(self.device))
-        self.load_state_dict(m_state_dict)
 
 
 class NN(Model):
@@ -108,10 +95,11 @@ class NN(Model):
         self.fc3 = nn.Linear(in_features=3, out_features=1)
 
         self.optimizer = optim.Rprop(self.parameters(), lr=lr)
+        self.to(self.device)
 
     def forward(self, x):
-        x = torch.sigmoid(self.fc1(x))
-        x = torch.sigmoid(self.fc2(x))
+        x = torch.relu(self.fc1(x))
+        x = torch.relu(self.fc2(x))
         x = self.fc3(x)
         return x.view(-1)
 
@@ -120,19 +108,19 @@ class CNN(Model):
     def __init__(self, nb_lags, lr):
         # instantiate model architecture + optimizer
         super().__init__()
-        self.conv1 = nn.Conv1d(in_channels=1, out_channels=6, kernel_size=3)
-        self.conv2 = nn.Conv1d(in_channels=6, out_channels=4, kernel_size=1)
+        self.conv1 = nn.Conv1d(in_channels=1, out_channels=8, kernel_size=3)
+        self.conv2 = nn.Conv1d(in_channels=8, out_channels=4, kernel_size=1)
         self.flatten = nn.Flatten()
         self.fc = nn.Linear(in_features=4*(nb_lags-(3-1)), out_features=1)
-        self.relu = torch.nn.ReLU()
         
         self.optimizer = optim.Rprop(self.parameters(), lr=lr)
-    
+        self.to(self.device)
+
     def forward(self, x):
         x = self.conv1(x[:,None,:])
-        x = self.relu(x)
+        x = torch.relu(x)
         x = self.conv2(x)
-        x = self.relu(x)
+        x = torch.relu(x)
         x = self.flatten(x)
         x = self.fc(x)
         return x.view(-1)
@@ -152,7 +140,8 @@ class LSTM(Model):
         self.fc = nn.Linear(in_features=2, out_features=1)
         
         self.optimizer = optim.Rprop(self.parameters(), lr=lr)
-    
+        self.to(self.device)
+
     def forward(self, x):
         self.lstm.flatten_parameters()
         _, (hidden, _) = self.lstm(x[:,:,None])
@@ -161,57 +150,65 @@ class LSTM(Model):
 
 
 class RandomForest(RandomForestRegressor):
-    def __init__(self, n_estimators):
-        super().__init__(n_estimators=n_estimators)
+    def __init__(self, n_estimators, max_features, random_state):
+        super().__init__(n_estimators=n_estimators, max_features=max_features, random_state=random_state)
     
     def train(self, train_lags, train_target):
         # train_lags : tensor of size (N, D) where D is the numbers of lags used to forecast
         # train_target : tensor of size (N)
+        print('Training Random Forest with n_estimators={} and max_features={:.2f} ...'.format(self.n_estimators, self.max_features))
         self.fit(train_lags, train_target)
 
-    def test(self, lags, target):
+    def test(self, lags, target, n_periods):
         self.log_returns = get_log_returns(self, lags, target)
         self.returns = get_returns(self, lags, target)
         self.hit_rate = compute_hit_rate(self, lags, target)
-        self.max_dd = compute_max_drawdown(self.log_returns)
-        self.sharpe = compute_sharpe(self.log_returns, n_periods=365)
+        self.max_dd = compute_max_drawdown(self.returns)
+        self.sharpe = compute_sharpe(self.log_returns, n_periods=n_periods)
 
     def forecast(self, lags):
         return self.predict(lags)
 
-    # def load_pretrained_model(self):
-    #     # This loads the parameters saved in bestmodels into the model
-    #     model_path = Path(__file__).parent.parent / "bestmodels/best{}.pth".format(
-    #         type(self).__name__
-    #     )
-    #     m_state_dict = torch.load(model_path, map_location=torch.device(self.device))
-    #     self.load_state_dict(m_state_dict)
-
 
 class Ensemble:
     def __init__(self, model_type, nb_models, nb_lags, lr):
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+        if model_type == NN:
+            self.model_type_str = 'NN'
+        elif model_type == CNN:
+            self.model_type_str = 'CNN'
+        elif model_type == LSTM:
+            self.model_type_str = 'LSTM'
+
         self.nb_models = nb_models
         self.nb_lags = nb_lags
         self.lr = lr
-        self.models = [model_type(nb_lags=nb_lags, lr=lr) for i in range(nb_models)]
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    
-    def train(self, train_lags, train_target, num_epochs, batch_size=None):
+
+        self.models = []
+        for i in range(nb_models):
+            torch.manual_seed(i)
+            self.models.append(model_type(nb_lags=nb_lags, lr=lr))
+
+    def train(self, train_lags, train_target, num_epochs, val_lags, val_target, batch_size=None):
         # train_lags : tensor of size (N, D) where D is the numbers of lags used to forecast
         # train_target : tensor of size (N)
+
+        print('Training ensemble of {} {} models with lr = {:.4f}:'.format(self.nb_models, self.model_type_str, self.lr))
         for i in range(self.nb_models):
-            self.models[i].train(train_lags, train_target, num_epochs=num_epochs, batch_size=batch_size)
+            self.models[i].train(train_lags, train_target, num_epochs=num_epochs, val_lags=val_lags, val_target=val_target, batch_size=batch_size)
+        print()
     
-    def test(self, lags, target):
+    def test(self, lags, target, n_periods):
         self.log_returns = get_log_returns(self, lags, target)
         self.returns = get_returns(self, lags, target)
         self.hit_rate = compute_hit_rate(self, lags, target)
-        self.max_dd = compute_max_drawdown(self.log_returns)
-        self.sharpe = compute_sharpe(self.log_returns, n_periods=365)
+        self.max_dd = compute_max_drawdown(self.returns)
+        self.sharpe = compute_sharpe(self.log_returns, n_periods=n_periods)
 
     def forecast(self, lags):
-        avg_forecast = torch.zeros(lags.shape[0])
+        median_forecast = torch.zeros((lags.shape[0], self.nb_models), device=self.device)
         for i in range(self.nb_models):
-            avg_forecast += self.models[i].forecast(lags)
-        avg_forecast = avg_forecast/self.nb_models
-        return avg_forecast
+            median_forecast[:,i] = self.models[i].forecast(lags)
+        median_forecast = median_forecast.median(dim=1)
+        return median_forecast.values

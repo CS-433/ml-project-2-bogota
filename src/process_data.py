@@ -1,4 +1,4 @@
-import re
+import pickle
 import torch
 import pandas as pd
 import numpy as np
@@ -11,15 +11,19 @@ DATA_FOLDER = "../data/"
 def main(dataset, nb_lags, train_ratio):
     read_path, save_path = find_paths(dataset)
     df = load_data(read_path, dataset)
-    df_train, df_val = split_data(df, train_ratio=train_ratio)
-    train_input, train_target = create_sequences(df_train, nb_lags=nb_lags)
-    val_input, val_target = create_sequences(df_val, nb_lags=nb_lags)
-
+    df_train, df_val, df_test = split_data(df, train_ratio=train_ratio)
+    train_lags, train_target, train_dates = create_sequences(df_train, nb_lags=nb_lags)
+    val_lags, val_target, val_dates = create_sequences(df_val, nb_lags=nb_lags)
+    test_lags, test_target, test_dates = create_sequences(df_test, nb_lags=nb_lags)
+    
     with open(save_path + "train_data.pkl", "wb") as f:
-        torch.save((train_input, train_target), f)
+        pickle.dump((train_lags, train_target, train_dates), f)
 
     with open(save_path + "val_data.pkl", "wb") as f:
-        torch.save((val_input, val_target), f)
+        pickle.dump((val_lags, val_target, val_dates), f)
+    
+    with open(save_path + "test_data.pkl", "wb") as f:
+        pickle.dump((test_lags, test_target, test_dates), f)
 
 
 def find_paths(dataset):
@@ -36,7 +40,7 @@ def find_paths(dataset):
         save_path = DATA_FOLDER + 'processed/' + 'stock_market_index/' + '{}/'.format(dataset)
     
     else:
-        raise ValueError("Unexpected 'dataset' argument when running process_data.py: 'dataset' should be in ['BTC-USD', 'ETH-USD', 'XRP-USD', 'LBMA-GOLD', 'NYMEX-NG', 'OPEC-ORB', 'SP500', 'CAC40', 'SMI'].")
+        raise ValueError("Unexpected 'dataset' argument: 'dataset' should be in ['BTC-USD', 'ETH-USD', 'XRP-USD', 'LBMA-GOLD', 'NYMEX-NG', 'OPEC-ORB', 'SP500', 'CAC40', 'SMI'].")
     
     return read_path, save_path
 
@@ -90,18 +94,32 @@ def split_data(df, train_ratio):
 
     df_train = df.loc[train_period]
     df_val = df.loc[val_period]
-    return df_train, df_val
+    df_test = df_val.iloc[int(len(df_val)/2):]
+    df_val = df_val.iloc[:int(len(df_val)/2)]
+    
+    return df_train, df_val, df_test
 
 
 def create_sequences(df, nb_lags):
     sequences = torch.empty((len(df) - nb_lags, nb_lags))
     targets = torch.empty(len(df) - nb_lags)
-
+    dates = []
+    
     for i in range(len(df) - nb_lags):
         sequences[i, :] = torch.tensor(df["Log_Return"].iloc[i : i + nb_lags].values)
         targets[i] = torch.tensor(df["Log_Return"].iloc[i + nb_lags])
+        dates.append(df.index[i + nb_lags])
+    
+    dates = pd.Series(dates)
+    
+    return sequences, targets, dates
 
-    return sequences, targets
+
+def load_processed_data(dataset, partition):
+    _, save_path = find_paths(dataset)
+    with open(save_path + "{}_data.pkl".format(partition), "rb") as f:
+        lags, target, dates = pickle.load(f)
+    return lags, target, dates
 
 
 if __name__ == "__main__": 

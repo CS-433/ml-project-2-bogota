@@ -1,8 +1,6 @@
 import argparse
 import pickle
 import torch
-import numpy as np
-import matplotlib.pyplot as plt
 from process_data import load_processed_data
 from models import NN, CNN, LSTM, Ensemble, RandomForest
 

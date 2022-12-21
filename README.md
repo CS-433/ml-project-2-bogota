@@ -68,12 +68,15 @@ The collection of data has been performed on different web sites herafter detail
 
 The raw data are already available in the data folder.
 ## Report
-All the detailes about the choices that have been made and the methodology used throughout this project are available in `report.pdf`. Through this report, the reader is able to understand the different assumptions, decisions and results made during the project. The theoretical background is also explained.
+All the details about the choices that have been made and the methodology used throughout this project are available in `report.pdf`. Through this report, the reader is able to understand the different assumptions, decisions and results made during the project. The theoretical background is also explained.
 # Reproduce results
 ## Requirements
-- Python==3.9.13
-- Numpy==1.21.5
-- Matplotlib
+If you are using conda you can directly run the following to install all the requirements:
+```
+conda env create -f environment.yml
+conda activate ml_project_finance
+```
+Otherwise the dependencies are available in `environment.yml`.
 
 ## Repo Architecture
 <pre>  
@@ -87,7 +90,6 @@ All the detailes about the choices that have been made and the methodology used 
             ├─── params_LSTM.pkl
             ├─── params_NN.pkl
             ├─── params_RandomForest.pkl
-            ├─── RandomForest.pkl
         ├─── NYMEX-NG
             ├─── CNN.pkl
             ├─── LSTM.pkl
@@ -96,7 +98,6 @@ All the detailes about the choices that have been made and the methodology used 
             ├─── params_LSTM.pkl
             ├─── params_NN.pkl
             ├─── params_RandomForest.pkl
-            ├─── RandomForest.pkl
         ├─── OPEC-ORB
             ├─── CNN.pkl
             ├─── LSTM.pkl
@@ -105,7 +106,6 @@ All the detailes about the choices that have been made and the methodology used 
             ├─── params_LSTM.pkl
             ├─── params_NN.pkl
             ├─── params_RandomForest.pkl
-            ├─── RandomForest.pkl
     ├─── cryptos
         ├─── BTC-USD
             ├─── CNN.pkl
@@ -115,7 +115,6 @@ All the detailes about the choices that have been made and the methodology used 
             ├─── params_LSTM.pkl
             ├─── params_NN.pkl
             ├─── params_RandomForest.pkl
-            ├─── RandomForest.pkl
         ├─── ETH-USD
             ├─── CNN.pkl
             ├─── LSTM.pkl
@@ -124,7 +123,6 @@ All the detailes about the choices that have been made and the methodology used 
             ├─── params_LSTM.pkl
             ├─── params_NN.pkl
             ├─── params_RandomForest.pkl
-            ├─── RandomForest.pkl
         ├─── XRP-USD
             ├─── CNN.pkl
             ├─── LSTM.pkl
@@ -133,7 +131,6 @@ All the detailes about the choices that have been made and the methodology used 
             ├─── params_LSTM.pkl
             ├─── params_NN.pkl
             ├─── params_RandomForest.pkl
-            ├─── RandomForest.pkl
     ├─── stock_market_index
         ├─── CAC40
             ├─── CNN.pkl
@@ -143,7 +140,6 @@ All the detailes about the choices that have been made and the methodology used 
             ├─── params_LSTM.pkl
             ├─── params_NN.pkl
             ├─── params_RandomForest.pkl
-            ├─── RandomForest.pkl
         ├─── SMI
             ├─── CNN.pkl
             ├─── LSTM.pkl
@@ -152,7 +148,6 @@ All the detailes about the choices that have been made and the methodology used 
             ├─── params_LSTM.pkl
             ├─── params_NN.pkl
             ├─── params_RandomForest.pkl
-            ├─── RandomForest.pkl
         ├─── SP500
             ├─── CNN.pkl
             ├─── LSTM.pkl
@@ -161,7 +156,6 @@ All the detailes about the choices that have been made and the methodology used 
             ├─── params_LSTM.pkl
             ├─── params_NN.pkl
             ├─── params_RandomForest.pkl
-            ├─── RandomForest.pkl
 ├─── data
     |─── processed
         ├─── commodities

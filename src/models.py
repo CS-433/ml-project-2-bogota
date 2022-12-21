@@ -212,3 +212,9 @@ class Ensemble:
             median_forecast[:,i] = self.models[i].forecast(lags)
         median_forecast = median_forecast.median(dim=1)
         return median_forecast.values
+    
+    def move_to(self, device):
+        self.device = device
+        for i in range(self.nb_models):
+            self.models[i].to(device)
+            self.models[i].device = device

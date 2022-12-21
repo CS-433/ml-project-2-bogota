@@ -1,0 +1,179 @@
+Best NN on NYMEX-NG test set achieves:
+     Hit-rate: 0.518
+     Annualized sharpe ratio: 0.523
+     Max drawdown: 0.565
+
+Best CNN on NYMEX-NG test set achieves:
+     Hit-rate: 0.519
+     Annualized sharpe ratio: 1.107
+     Max drawdown: 0.491
+
+Best LSTM on NYMEX-NG test set achieves:
+     Hit-rate: 0.494
+     Annualized sharpe ratio: -0.308
+     Max drawdown: 0.623
+
+Best RandomForest on NYMEX-NG test set achieves:
+     Hit-rate: 0.498
+     Annualized sharpe ratio: 0.352
+     Max drawdown: 0.588
+
+Best NN on LBMA-GOLD test set achieves:
+     Hit-rate: 0.502
+     Annualized sharpe ratio: -0.056
+     Max drawdown: 0.207
+
+Best CNN on LBMA-GOLD test set achieves:
+     Hit-rate: 0.511
+     Annualized sharpe ratio: -0.960
+     Max drawdown: 0.331
+
+Best LSTM on LBMA-GOLD test set achieves:
+     Hit-rate: 0.477
+     Annualized sharpe ratio: -0.468
+     Max drawdown: 0.239
+
+Best RandomForest on LBMA-GOLD test set achieves:
+     Hit-rate: 0.512
+     Annualized sharpe ratio: 0.305
+     Max drawdown: 0.218
+
+Best NN on OPEC-ORB test set achieves:
+     Hit-rate: 0.492
+     Annualized sharpe ratio: 0.389
+     Max drawdown: 0.241
+
+Best CNN on OPEC-ORB test set achieves:
+     Hit-rate: 0.508
+     Annualized sharpe ratio: 0.652
+     Max drawdown: 0.289
+
+Best LSTM on OPEC-ORB test set achieves:
+     Hit-rate: 0.527
+     Annualized sharpe ratio: 0.994
+     Max drawdown: 0.239
+
+Best RandomForest on OPEC-ORB test set achieves:
+     Hit-rate: 0.522
+     Annualized sharpe ratio: 1.012
+     Max drawdown: 0.262
+
+Best NN on BTC-USD test set achieves:
+     Hit-rate: 0.457
+     Annualized sharpe ratio: -0.981
+     Max drawdown: 0.656
+
+Best CNN on BTC-USD test set achieves:
+     Hit-rate: 0.446
+     Annualized sharpe ratio: -2.066
+     Max drawdown: 0.850
+
+Best LSTM on BTC-USD test set achieves:
+     Hit-rate: 0.479
+     Annualized sharpe ratio: -0.140
+     Max drawdown: 0.570
+
+Best RandomForest on BTC-USD test set achieves:
+     Hit-rate: 0.459
+     Annualized sharpe ratio: -2.020
+     Max drawdown: 0.859
+
+Best NN on ETH-USD test set achieves:
+     Hit-rate: 0.457
+     Annualized sharpe ratio: -0.560
+     Max drawdown: 0.701
+
+Best CNN on ETH-USD test set achieves:
+     Hit-rate: 0.490
+     Annualized sharpe ratio: -0.327
+     Max drawdown: 0.564
+
+Best LSTM on ETH-USD test set achieves:
+     Hit-rate: 0.481
+     Annualized sharpe ratio: 1.123
+     Max drawdown: 0.395
+
+Best RandomForest on ETH-USD test set achieves:
+     Hit-rate: 0.475
+     Annualized sharpe ratio: 0.245
+     Max drawdown: 0.442
+
+Best NN on XRP-USD test set achieves:
+     Hit-rate: 0.497
+     Annualized sharpe ratio: -0.143
+     Max drawdown: 0.727
+
+Best CNN on XRP-USD test set achieves:
+     Hit-rate: 0.497
+     Annualized sharpe ratio: 0.521
+     Max drawdown: 0.735
+
+Best LSTM on XRP-USD test set achieves:
+     Hit-rate: 0.532
+     Annualized sharpe ratio: 1.191
+     Max drawdown: 0.443
+
+Best RandomForest on XRP-USD test set achieves:
+     Hit-rate: 0.470
+     Annualized sharpe ratio: -1.453
+     Max drawdown: 0.840
+
+Best NN on SP500 test set achieves:
+     Hit-rate: 0.553
+     Annualized sharpe ratio: 0.833
+     Max drawdown: 0.268
+
+Best CNN on SP500 test set achieves:
+     Hit-rate: 0.554
+     Annualized sharpe ratio: 0.801
+     Max drawdown: 0.276
+
+Best LSTM on SP500 test set achieves:
+     Hit-rate: 0.558
+     Annualized sharpe ratio: 0.768
+     Max drawdown: 0.241
+
+Best RandomForest on SP500 test set achieves:
+     Hit-rate: 0.548
+     Annualized sharpe ratio: 0.090
+     Max drawdown: 0.248
+
+Best NN on SMI test set achieves:
+     Hit-rate: 0.507
+     Annualized sharpe ratio: -0.588
+     Max drawdown: 0.263
+
+Best CNN on SMI test set achieves:
+     Hit-rate: 0.511
+     Annualized sharpe ratio: -0.321
+     Max drawdown: 0.237
+
+Best LSTM on SMI test set achieves:
+     Hit-rate: 0.506
+     Annualized sharpe ratio: -0.367
+     Max drawdown: 0.205
+
+Best RandomForest on SMI test set achieves:
+     Hit-rate: 0.488
+     Annualized sharpe ratio: -0.805
+     Max drawdown: 0.255
+
+Best NN on CAC40 test set achieves:
+     Hit-rate: 0.520
+     Annualized sharpe ratio: -0.192
+     Max drawdown: 0.278
+
+Best CNN on CAC40 test set achieves:
+     Hit-rate: 0.526
+     Annualized sharpe ratio: 0.702
+     Max drawdown: 0.155
+
+Best LSTM on CAC40 test set achieves:
+     Hit-rate: 0.528
+     Annualized sharpe ratio: 0.499
+     Max drawdown: 0.171
+
+Best RandomForest on CAC40 test set achieves:
+     Hit-rate: 0.498
+     Annualized sharpe ratio: -0.674
+     Max drawdown: 0.373

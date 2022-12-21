@@ -11,6 +11,7 @@ sns.set()
 sns.set_style("whitegrid")
 colors = sns.color_palette("colorblind", 16)
 
+
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
@@ -36,16 +37,16 @@ def main(model_type, dataset):
     elif model_type == 'LSTM':
         model = Ensemble(model_type=LSTM, nb_models=100, nb_lags=nb_lags, lr=param)
         model.train(train_lags, train_target, num_epochs=500, val_lags=val_lags, val_target=val_target)
-        
+    
     elif model_type == 'RandomForest':
-        model = RandomForest(n_estimators=10000, random_state=0, max_features=param)
-        model.train(train_lags, train_target)
+        pass
     
     else:
         raise ValueError("Unexpected 'model_type' argument: 'model_type' should be in ['NN', 'CNN', 'LSTM', 'RandomForest'].")
     
     # Save model:
-    save_model(model, model_type, dataset)
+    if model_type in ['NN', 'CNN', 'LSTM']:
+        save_model(model, model_type, dataset)
     
     # Plot losses and hit_rates for torch models:
     if model_type in ['NN', 'CNN', 'LSTM']:
@@ -85,7 +86,8 @@ def save_model(model, model_type, dataset):
         raise ValueError("Unexpected 'dataset' argument: 'dataset' should be in ['BTC-USD', 'ETH-USD', 'XRP-USD', 'LBMA-GOLD', 'NYMEX-NG', 'OPEC-ORB', 'SP500', 'CAC40', 'SMI'].")
     
     with open(model_path, "wb") as f:
-        pickle.dump(model, f)
+        model.move_to('cpu')
+        torch.save(model, f)
 
 
 def plot_metrics(model, model_type, dataset):

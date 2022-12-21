@@ -6,7 +6,7 @@ import argparse
 
 
 DATA_FOLDER = "../data/"
-
+DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 def main(dataset, nb_lags, train_ratio):
     read_path, save_path = find_paths(dataset)
@@ -119,7 +119,7 @@ def load_processed_data(dataset, partition):
     _, save_path = find_paths(dataset)
     with open(save_path + "{}_data.pkl".format(partition), "rb") as f:
         lags, target, dates = pickle.load(f)
-    return lags, target, dates
+    return lags.to(DEVICE), target.to(DEVICE), dates
 
 
 if __name__ == "__main__": 

@@ -1,9 +1,15 @@
 import argparse
 import pickle
 import torch
+import seaborn as sns
+import matplotlib.pyplot as plt
 from process_data import load_processed_data
 from models import NN, CNN, LSTM, Ensemble, RandomForest
 
+
+sns.set()
+sns.set_style("whitegrid")
+colors = sns.color_palette("colorblind", 16)
 
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -40,6 +46,10 @@ def main(model_type, dataset):
     
     # Save model:
     save_model(model, model_type, dataset)
+    
+    # Plot losses and hit_rates for torch models:
+    if model_type in ['NN', 'CNN', 'LSTM']:
+        plot_metrics(model, model_type, dataset)
 
 
 def load_best_params(model_type, dataset):
@@ -76,6 +86,31 @@ def save_model(model, model_type, dataset):
     
     with open(model_path, "wb") as f:
         pickle.dump(model, f)
+
+
+def plot_metrics(model, model_type, dataset):
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(10,5))
+    fig.suptitle('Losses and hit-rates during training of {} on {}'.format(model_type, dataset), fontsize=14)
+    plt.subplots_adjust(wspace= 0.25, hspace= 0.25)
+    
+    for model in model.models:
+        ax1.plot(model.train_losses, color=colors[0])
+        ax1.plot(model.val_losses, color=colors[1])
+        
+        ax2.plot(model.train_hit_rates, color=colors[0])
+        ax2.plot(model.val_hit_rates, color=colors[1])
+    
+    ax1.set_xlabel('Epochs')
+    ax1.set_ylabel('MSE Losses')
+    ax1.legend(['Train set', 'Validation set'])
+    ax1.grid(True)
+    
+    ax2.set_xlabel('Epochs')
+    ax2.set_ylabel('Hit-Rates')
+    ax2.legend(['Train set', 'Validation set'])
+    ax2.grid(True)
+    
+    plt.show()
 
 
 if __name__ == '__main__':

@@ -157,7 +157,7 @@ class RandomForest(RandomForestRegressor):
         # train_lags : tensor of size (N, D) where D is the numbers of lags used to forecast
         # train_target : tensor of size (N)
         print('Training Random Forest with n_estimators={} and max_features={:.2f} ...'.format(self.n_estimators, self.max_features))
-        self.fit(train_lags, train_target)
+        self.fit(train_lags.to('cpu'), train_target.to('cpu'))
 
     def test(self, lags, target, n_periods):
         self.log_returns = get_log_returns(self, lags, target)

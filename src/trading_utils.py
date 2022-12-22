@@ -9,7 +9,7 @@ RF = 0
 def get_log_returns(model, lags, target, rf=RF):
     output = model.forecast(lags)
     output = torch.Tensor(output)
-    return (output.sign() * target).detach().to('cpu').numpy()
+    return (output.sign() * target).detach().to("cpu").numpy()
 
 
 def get_returns(model, lags, target, rf=RF):

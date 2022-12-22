@@ -71,15 +71,14 @@ The raw data are already available in the data folder.
 All the details about the choices that have been made and the methodology used throughout this project are available in `report.pdf`. Through this report, the reader is able to understand the different assumptions, decisions and results made during the project. The theoretical background is also explained.
 # Reproduce results
 ## Requirements
-If you are using conda you can directly run the following to install all the requirements:
-```
-conda env create -f environment.yml
-conda activate ml_project_finance
-```
-Otherwise the dependencies are available in `environment.yml`. If you also want to run the notebooks, after activating `ml_project_finance` execute:
-```
-conda install ipykernel
-```
+
+- python=3.10.8
+- pytorch=1.13.1
+- pandas=1.5.2
+- scikit-learn=1.1.3
+- tqdm=4.64.1
+- matplotlib=3.6.2
+- seaborn=0.12.1
 
 ## Repo Architecture
 <pre>  
@@ -195,7 +194,7 @@ conda install ipykernel
             ├─── CAC40.csv
             ├─── SMI.csv
             ├─── SP500.csv
-├─── environment.yml
+├─── requirements.txt
 ├─── notebooks
     ├─── combinations.ipynb:
     ├─── data_analysis.ipynb: Exploratory data analysis notebooks.

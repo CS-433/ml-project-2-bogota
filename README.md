@@ -216,6 +216,8 @@ All the details about the choices that have been made and the methodology used t
 </pre>
 
 ## Instructions to run 
+First make sure to have all the requirements and the data folder in the root.
+
 The following commands give more details about the positional arguments and a description of the process done while running:
 
 ```

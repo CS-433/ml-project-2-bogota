@@ -2,8 +2,8 @@ import torch
 import pickle
 import argparse
 import numpy as np
-from process_data import load_processed_data
-from models import NN, CNN, LSTM, Ensemble, RandomForest
+from src.process_data import load_processed_data
+from src.models import NN, CNN, LSTM, Ensemble, RandomForest
 
 
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")

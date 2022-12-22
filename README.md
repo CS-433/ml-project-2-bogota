@@ -76,7 +76,10 @@ If you are using conda you can directly run the following to install all the req
 conda env create -f environment.yml
 conda activate ml_project_finance
 ```
-Otherwise the dependencies are available in `environment.yml`.
+Otherwise the dependencies are available in `environment.yml`. If you also want to run the notebooks, after activating `ml_project_finance` execute:
+```
+conda install ipykernel
+```
 
 ## Repo Architecture
 <pre>  

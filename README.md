@@ -195,14 +195,16 @@ conda install ipykernel
             ├─── CAC40.csv
             ├─── SMI.csv
             ├─── SP500.csv
-├─── figures
-    ├─── 
+├─── environment.yml
 ├─── notebooks
+    ├─── combinations.ipynb:
     ├─── data_analysis.ipynb: Exploratory data analysis notebooks.
 ├─── README.md: README
 ├─── references
     ├─── bitcoin_and_market_inefficiency.pdf
     ├─── project2_description.pdf
+├─── report.pdf: Report explaining methods and choices that have been made.
+├─── results.txt
 ├─── src
     ├─── __init__.py: File to define src directory as a python package
     ├─── models.py
@@ -211,7 +213,7 @@ conda install ipykernel
     ├─── trading_utils.py
     ├─── train.py
     ├─── validation.py
-├─── report.pdf: Report explaining methods and choices that have been made.
+
 </pre>
 
 ## Instructions to run 
